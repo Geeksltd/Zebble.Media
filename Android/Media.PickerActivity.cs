@@ -1,14 +1,14 @@
 ﻿namespace Zebble.Device
 {
-    using System;
-    using System.IO;
-    using System.Threading.Tasks;
     using Android.App;
     using Android.Content;
     using Android.Content.PM;
     using Android.Database;
     using Android.OS;
     using Android.Provider;
+    using System;
+    using System.IO;
+    using System.Threading.Tasks;
     using Uri = Android.Net.Uri;
 
     partial class Media

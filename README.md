@@ -5,12 +5,11 @@
 
 ![logo]
 
-A Zebble plugin to work with media on Zebble applications.
+A plugin to use camera for capturing or picking photos or videos on Zebble applications.
 
 
 [![NuGet](https://img.shields.io/nuget/v/Zebble.Media.svg?label=NuGet)](https://www.nuget.org/packages/Zebble.Media/)
 
-> This plugin make you able to pick media from a device and use camera and take a picture or video on Android, IOS, and UWP platforms.
 
 <br>
 
@@ -44,7 +43,7 @@ var photoFile = await Device.Media.TakePhoto();
 //Video
 var videoFile = await Device.Media.TakeVideo();
 ```
- After the media is taken, it is returned as a temporary file which you can processing in your application. `TakePhoto()` or `TakeVideo` method will internally check for camera availablity support for photo or video taking and even request permission use the camera. If there is any problem or if the user cancels the process, it will simply return `Null`. So if want to take a photo or video in your App, you can just call one of these methods without warring about the scenario.
+ After the media is taken, it is returned as a temporary file which can be processed in your application. `TakePhoto()` or `TakeVideo` methods will internally check for camera availablity and support for photo or video taking and even request permission to use the camera. If there is any problem or if the user cancels the process, it will simply return `Null`.
 ##### Picking media:
 ```csharp
 //Photo

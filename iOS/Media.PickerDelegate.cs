@@ -1,10 +1,10 @@
 ﻿namespace Zebble.Device
 {
+    using CoreGraphics;
+    using Foundation;
     using System;
     using System.IO;
     using System.Threading.Tasks;
-    using CoreGraphics;
-    using Foundation;
     using UIKit;
 
     partial class Media

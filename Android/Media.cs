@@ -1,13 +1,12 @@
 ﻿namespace Zebble.Device
 {
-    using System;
-    using System.IO;
-    using System.Threading.Tasks;
     using Android.Content;
     using Android.Content.PM;
     using Android.Media;
     using Android.Provider;
-    using Zebble.Services;
+    using System;
+    using System.IO;
+    using System.Threading.Tasks;
 
     partial class Media
     {

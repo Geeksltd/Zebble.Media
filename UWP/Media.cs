@@ -1,10 +1,5 @@
 ﻿namespace Zebble.Device
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Threading.Tasks;
     using Windows.Devices.Enumeration;
     using Windows.Media.Capture;
     using Windows.Storage;
