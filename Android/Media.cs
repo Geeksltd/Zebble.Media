@@ -7,6 +7,7 @@
     using System;
     using System.IO;
     using System.Threading.Tasks;
+    using Zebble.Services;
 
     partial class Media
     {
