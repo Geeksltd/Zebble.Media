@@ -11,7 +11,7 @@
         const string PHOTO_TYPE = "public.image", VIDEO_TYPE = "public.movie";
         internal static UIStatusBarStyle StatusBarStyle { get; set; }
 
-        static Media() => StatusBarStyle = UIApplication.SharedApplication.StatusBarStyle;
+        static Media() => Thread.UI.Run(() => StatusBarStyle = UIApplication.SharedApplication.StatusBarStyle);
 
         public static Task<bool> IsCameraAvailable()
         {
