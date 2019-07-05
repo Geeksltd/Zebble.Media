@@ -57,6 +57,39 @@ Device.Media.SaveToAlbum(myfile);
 ```
 <br>
 
+### Platform Specific Notes
+Some platforms require some setting to make you able to use this plugin.
+
+#### Android
+if your target API is grater then 24 you should add these codes to the manifest file:
+
+```xml
+<application>
+   ...
+   <provider
+    android:name="android.support.v4.content.FileProvider"
+    android:authorities="${applicationId}.zebblefileprovider"
+        android:exported="false"
+        android:grantUriPermissions="true">
+      <meta-data
+          android:name="android.support.FILE_PROVIDER_PATHS"
+          android:resource="@xml/file_paths"/>
+    </provider>
+    ...
+</application>
+```
+
+Then, create new file under `res/xml/media_file_paths.xml` and add below code to it.
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <external-files-path name="my_images" path="Pictures" />
+    <external-files-path name="my_movies" path="Movies" />
+</paths>
+```
+
+
 ### Methods
 | Method       | Return Type  | Parameters                          | Android | iOS | Windows |
 | :----------- | :----------- | :-----------                        | :------ | :-- | :------ |

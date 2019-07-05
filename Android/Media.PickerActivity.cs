@@ -41,10 +41,12 @@
 
             Java.IO.File PrepareTempStorageFile()
             {
-                var folder = new Java.IO.File(
-     Android.OS.Environment.GetExternalStoragePublicDirectory(
-         IsVideo ? Android.OS.Environment.DirectoryMovies :
-       Android.OS.Environment.DirectoryPictures), StartUp.ApplicationName.Or("zebble").ToLower());
+                var pictureDirectory = Android.OS.Environment.DirectoryPictures;
+                var videoDirectory = Android.OS.Environment.DirectoryMovies;
+                var type = IsVideo ? videoDirectory : pictureDirectory;
+
+                var folder = new Java.IO.File(Renderer.Context.GetExternalFilesDir(type), StartUp.ApplicationName.Or("zebble").ToLower());
+
                 if (!folder.Exists()) folder.Mkdirs();
 
                 TempStorageFile = new Java.IO.File(folder, Guid.NewGuid().ToString().Remove("-").ToLower() +
@@ -88,13 +90,23 @@
                             if (FrontCamera)
                                 intent.PutExtra("android.intent.extras.CAMERA_FACING", 1);
 
-                            intent.PutExtra(MediaStore.ExtraOutput, Uri.FromFile(PrepareTempStorageFile()));
+
+                            var file = PrepareTempStorageFile();
+                            Uri path;
+                            var packageName = UIRuntime.CurrentActivity.PackageName;
+                            if (Build.VERSION.SdkInt >= BuildVersionCodes.N)
+                                path = Android.Support.V4.Content.FileProvider.GetUriForFile(Renderer.Context, $"{packageName}.zebblefileprovider", file);
+                            else path = Uri.FromFile(file);
+
+                            intent.PutExtra(MediaStore.ExtraOutput, path);
                         }
 
-                        StartActivityForResult(intent, RequestId);
+                        if (intent.ResolveActivity(PackageManager) != null)
+                            StartActivityForResult(intent, RequestId);
                     }
                     catch (Exception ex)
                     {
+                        Log.Error(ex);
                         Picked.RaiseOn(Thread.Pool, new MediaPickedEventArgs(RequestId, ex));
                         Finish();
                     }
