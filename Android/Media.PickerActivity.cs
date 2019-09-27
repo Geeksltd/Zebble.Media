@@ -41,11 +41,7 @@
 
             Java.IO.File PrepareTempStorageFile()
             {
-                var pictureDirectory = Android.OS.Environment.DirectoryPictures;
-                var videoDirectory = Android.OS.Environment.DirectoryMovies;
-                var type = IsVideo ? videoDirectory : pictureDirectory;
-
-                var folder = new Java.IO.File(Renderer.Context.GetExternalFilesDir(type), StartUp.ApplicationName.Or("zebble").ToLower());
+                var folder = new Java.IO.File(Android.OS.Environment.ExternalStorageDirectory, StartUp.ApplicationName.Or("zebble").ToLower());
 
                 if (!folder.Exists()) folder.Mkdirs();
 
@@ -92,10 +88,14 @@
 
 
                             var file = PrepareTempStorageFile();
+                            if (!file.CreateNewFile())
+                            {
+                                throw new ArgumentOutOfRangeException();
+                            }
                             Uri path;
                             var packageName = UIRuntime.CurrentActivity.PackageName;
                             if (Build.VERSION.SdkInt >= BuildVersionCodes.N)
-                                path = Android.Support.V4.Content.FileProvider.GetUriForFile(Renderer.Context, $"{packageName}.zebblefileprovider", file);
+                                path = Android.Support.V4.Content.FileProvider.GetUriForFile(Application.Context, $"{packageName}.fileprovider", file);
                             else path = Uri.FromFile(file);
 
                             intent.PutExtra(MediaStore.ExtraOutput, path);
