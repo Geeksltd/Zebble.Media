@@ -11,7 +11,21 @@
         const string PHOTO_TYPE = "public.image", VIDEO_TYPE = "public.movie";
         internal static UIStatusBarStyle StatusBarStyle { get; set; }
 
-        static Media() => Thread.UI.Run(() => StatusBarStyle = UIApplication.SharedApplication.StatusBarStyle);
+        static Media()
+        {
+            Thread.UI.Run(() =>
+            {
+                try
+                {
+                    StatusBarStyle = UIApplication.SharedApplication.StatusBarStyle;
+                }
+                catch
+                {
+
+                    StatusBarStyle = UIStatusBarStyle.Default;
+                }
+            });
+        }
 
         public static Task<bool> IsCameraAvailable()
         {
@@ -56,11 +70,13 @@
 
         static Task<FileInfo> LaunchMediaPicker(UIImagePickerControllerSourceType sourceType, string mediaType, Device.MediaCaptureSettings settings)
         {
+            Log.Warning("LaunchMediaPicker called");
             return Thread.UI.Run(() => DoLaunchMediaPicker(sourceType, mediaType, settings));
         }
 
         static async Task<FileInfo> DoLaunchMediaPicker(UIImagePickerControllerSourceType sourceType, string mediaType, Device.MediaCaptureSettings settings)
         {
+            Log.Warning("DoLaunchMediaPicker called");
             var controller = UIRuntime.Window.RootViewController;
 
             while (controller.PresentedViewController != null)
