@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>Zebble.Media</id>
-    <version>1.1.107</version>
+    <version>1.1.108</version>
     <title>Media for Zebble (Xamarin)</title>
     <projectUrl>https://github.com/Geeksltd/Zebble.Media</projectUrl>
     <iconUrl>https://raw.githubusercontent.com/Geeksltd/Zebble.Media/master/Shared/NuGet/Icon.png</iconUrl>
