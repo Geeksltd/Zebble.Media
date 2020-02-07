@@ -39,19 +39,7 @@
                 base.OnSaveInstanceState(outState);
             }
 
-            Java.IO.File PrepareTempStorageFile()
-            {
-                var folder = new Java.IO.File(Android.OS.Environment.ExternalStorageDirectory, StartUp.ApplicationName.Or("zebble").ToLower());
-
-                if (!folder.Exists()) folder.Mkdirs();
-
-                TempStorageFile = new Java.IO.File(folder, Guid.NewGuid().ToString().Remove("-").ToLower() +
-                    (IsVideo ? ".mp4" : ".jpg"));
-
-                folder.Dispose();
-
-                return TempStorageFile;
-            }
+            FileInfo PrepareTempStorageFile() => IO.CreateTempFile(IsVideo ? ".mp4" : "jpg");
 
             protected override void OnCreate(Bundle savedInstanceState)
             {
@@ -87,11 +75,7 @@
                                 intent.PutExtra("android.intent.extras.CAMERA_FACING", 1);
 
 
-                            var file = PrepareTempStorageFile();
-                            if (!file.CreateNewFile())
-                            {
-                                throw new ArgumentOutOfRangeException();
-                            }
+                            var file = new Java.IO.File(PrepareTempStorageFile().FullName);
                             Uri path;
                             var packageName = UIRuntime.CurrentActivity.PackageName;
                             if (Build.VERSION.SdkInt >= BuildVersionCodes.N)
