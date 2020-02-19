@@ -26,6 +26,7 @@
             int MaxSeconds;
             VideoQuality VideoQuality;
             Java.IO.File TempStorageFile;
+            Uri FilePath;
 
             protected override void OnSaveInstanceState(Bundle outState)
             {
@@ -83,6 +84,7 @@
                             else path = Uri.FromFile(file);
 
                             intent.PutExtra(MediaStore.ExtraOutput, path);
+                            FilePath = path;
                         }
 
                         if (intent.ResolveActivity(PackageManager) != null)
@@ -119,14 +121,15 @@
 
             void SaveResult(Uri uri)
             {
+                var fileUri = uri ?? FilePath;
                 if (TempStorageFile?.Exists() == true)
                     File.Move(TempStorageFile.ToString(), Result.FullName);
-                else if (uri?.Scheme == "file")
+                else if (fileUri?.Scheme == "file")
                 {
-                    var file = new System.Uri(uri.ToString()).LocalPath;
+                    var file = new System.Uri(fileUri.ToString()).LocalPath;
                     if (file != Result.FullName) File.Copy(file, Result.FullName);
                 }
-                else if (uri?.Scheme == "content") SaveContentToFile(uri);
+                else if (fileUri?.Scheme == "content") SaveContentToFile(fileUri);
             }
 
             void SaveContentToFile(Uri uri)
@@ -158,7 +161,6 @@
                         {
                             try
                             {
-                                var fileName = Path.GetFileName(contentPath);
                                 using (var input = ContentResolver.OpenInputStream(uri))
                                 using (var output = File.Create(Result.FullName))
                                     input.CopyTo(output);
