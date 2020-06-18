@@ -6,6 +6,7 @@
     using Android.Database;
     using Android.OS;
     using Android.Provider;
+    using AndroidX.Core.Content;
     using System;
     using System.IO;
     using System.Threading.Tasks;
@@ -80,7 +81,7 @@
                             Uri path;
                             var packageName = UIRuntime.CurrentActivity.PackageName;
                             if (Build.VERSION.SdkInt >= BuildVersionCodes.N)
-                                path = Android.Support.V4.Content.FileProvider.GetUriForFile(Application.Context, $"{packageName}.fileprovider", file);
+                                path = FileProvider.GetUriForFile(Application.Context, $"{packageName}.fileprovider", file);
                             else path = Uri.FromFile(file);
 
                             intent.PutExtra(MediaStore.ExtraOutput, path);
