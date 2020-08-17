@@ -4,10 +4,33 @@
     using System.IO;
     using System.Threading.Tasks;
 
-    public static partial class Media
+    public partial class Media : Button, FormField.IControl, IBindableInput
     {
+        public readonly AsyncEvent SelectedFileChanged = new AsyncEvent(ConcurrentEventRaisePolicy.Queue);
+        object FormField.IControl.Value { get => SelectedFile; set => SelectedFile = (FileInfo)value; }
+
+        FileInfo @selectedFile;
+        public FileInfo SelectedFile
+        {
+            get => @selectedFile;
+            set
+            {
+                if (@selectedFile == value) return;
+                @selectedFile = value;
+                SelectedFileChanged.Raise();
+            }
+        }
+
+        public void AddBinding(Bindable bindable) => SelectedFileChanged.Handle(() => bindable.SetUserValue(SelectedFile));
+
+        public override void Dispose()
+        {
+            SelectedFileChanged?.Dispose();
+            base.Dispose();
+        }
+
         /// <summary>Saves a picked photo file into a local temp folder in the device's cache folder and returns it.</summary>
-        public static async Task<FileInfo> TakePhoto(Device.MediaCaptureSettings settings = null, OnError errorAction = OnError.Alert)
+        public async Task<FileInfo> TakePhoto(Device.MediaCaptureSettings settings = null, OnError errorAction = OnError.Alert)
         {
             if (!await IsCameraAvailable())
             {
@@ -29,7 +52,8 @@
 
             try
             {
-                return await Thread.UI.Run(() => DoTakePhoto(settings ?? new Device.MediaCaptureSettings()));
+                selectedFile = await Thread.UI.Run(() => DoTakePhoto(settings ?? new Device.MediaCaptureSettings()));
+                return selectedFile;
             }
             catch (Exception ex)
             {
@@ -39,7 +63,7 @@
         }
 
         /// <summary>Saves a taken video into a local temp folder in the device's cache folder and returns it.</summary>
-        public static async Task<FileInfo> TakeVideo(Device.MediaCaptureSettings settings = null, OnError errorAction = OnError.Alert)
+        public async Task<FileInfo> TakeVideo(Device.MediaCaptureSettings settings = null, OnError errorAction = OnError.Alert)
         {
             if (!await IsCameraAvailable())
             {
@@ -61,7 +85,8 @@
 
             try
             {
-                return await Thread.UI.Run(() => DoTakeVideo(settings ?? new Device.MediaCaptureSettings()));
+                selectedFile = await Thread.UI.Run(() => DoTakeVideo(settings ?? new Device.MediaCaptureSettings()));
+                return selectedFile;
             }
             catch (Exception ex)
             {
@@ -71,7 +96,7 @@
         }
 
         /// <summary>Saves a picked photo into a local temp folder in the device's cache folder and returns it.</summary>
-        public static async Task<FileInfo> PickPhoto(OnError errorAction = OnError.Alert)
+        public async Task<FileInfo> PickPhoto(OnError errorAction = OnError.Alert)
         {
             if (!SupportsPickingPhoto())
             {
@@ -87,7 +112,8 @@
 
             try
             {
-                return await Thread.UI.Run(DoPickPhoto);
+                selectedFile = await Thread.UI.Run(DoPickPhoto);
+                return selectedFile;
             }
             catch (Exception ex)
             {
@@ -97,7 +123,7 @@
         }
 
         /// <summary>Saves a picked video into a local temp folder in the device's cache folder and returns it.</summary>
-        public static async Task<FileInfo> PickVideo(OnError errorAction = OnError.Alert)
+        public async Task<FileInfo> PickVideo(OnError errorAction = OnError.Alert)
         {
             if (!SupportsPickingVideo())
             {
@@ -113,7 +139,8 @@
 
             try
             {
-                return await Thread.UI.Run(DoPickVideo);
+                selectedFile = await Thread.UI.Run(DoPickVideo);
+                return selectedFile;
             }
             catch (Exception ex)
             {
@@ -138,7 +165,7 @@
         /// <summary>
         /// Saves a specified image file to the device's camera roll.
         /// </summary>
-        public static async Task<bool> SaveToAlbum(FileInfo file, OnError errorAction = OnError.Alert)
+        public async Task<bool> SaveToAlbum(FileInfo file, OnError errorAction = OnError.Alert)
         {
             try
             {

@@ -45,7 +45,7 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="Xamarin.iOS" />
     <Reference Include="Zebble.iOS, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Zebble.4.4.278\lib\Xamarin.iOS10\Zebble.iOS.dll</HintPath>
+      <HintPath>..\packages\Zebble.4.5.359\lib\Xamarin.iOS10\Zebble.iOS.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -57,10 +57,10 @@
     <Compile Include="Media.PickerPopoverDelegate.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Zebble-LicenseAgreement.txt" />
+    <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Properties\" />
+    <Content Include="Zebble-LicenseAgreement.txt" />
   </ItemGroup>
   <Import Project="..\Shared\Shared.projitems" Label="Shared" Condition="Exists('..\Shared\Shared.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />

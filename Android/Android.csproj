@@ -155,7 +155,7 @@
       <HintPath>..\packages\Xamarin.AndroidX.ViewPager.1.0.0.1\lib\monoandroid90\Xamarin.AndroidX.ViewPager.dll</HintPath>
     </Reference>
     <Reference Include="Zebble.Android, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Zebble.4.5.355\lib\MonoAndroid10\Zebble.Android.dll</HintPath>
+      <HintPath>..\packages\Zebble.4.5.359\lib\MonoAndroid10\Zebble.Android.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
