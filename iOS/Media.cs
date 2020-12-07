@@ -1,5 +1,7 @@
 ﻿namespace Zebble.Device
 {
+    using AssetsLibrary;
+    using Foundation;
     using System;
     using System.IO;
     using System.Linq;
@@ -146,11 +148,26 @@
         static async Task DoSaveToAlbum(FileInfo file)
         {
             var source = new TaskCompletionSource<bool>();
-            using (var image = await Services.ImageService.DecodeImage(file.ReadAllBytes()))
+            var isPhoto = file.GetMimeType().StartsWith("image");
+
+            if (isPhoto)
             {
+                var bytes = file.ReadAllBytes();
+                var image = await Services.ImageService.DecodeImage(bytes);
                 image.SaveToPhotosAlbum((img, err) =>
                 {
                     if (err != null) source.TrySetException(new Exception(err.Description));
+                    else source.TrySetResult(result: true);
+
+                    image.Dispose();
+                });
+            }
+            else
+            {
+                ALAssetsLibrary lib = new ALAssetsLibrary();
+                lib.WriteVideoToSavedPhotosAlbum(NSUrl.FromFilename(file.FullName), (video, error) =>
+                {
+                    if (error != null) source.TrySetException(new Exception(error.Description));
                     else source.TrySetResult(result: true);
                 });
             }
