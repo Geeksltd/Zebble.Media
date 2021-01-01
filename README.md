@@ -1,4 +1,4 @@
-[logo]: https://raw.githubusercontent.com/Geeksltd/Zebble.Media/master/Shared/NuGet/Icon.png "Zebble.Media"
+﻿[logo]: https://raw.githubusercontent.com/Geeksltd/Zebble.Media/master/icon.png "Zebble.Media"
 
 
 ## Zebble.Media

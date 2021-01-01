@@ -11,6 +11,7 @@
     using System.IO;
     using System.Threading.Tasks;
     using Uri = Android.Net.Uri;
+    using Olive;
 
     partial class Media
     {

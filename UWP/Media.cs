@@ -9,6 +9,7 @@
     using Windows.Media.Capture;
     using Windows.Storage;
     using Windows.Storage.Pickers;
+    using Olive;
 
     partial class Media
     {
