@@ -94,7 +94,7 @@
                     }
                     catch (Exception ex)
                     {
-                        Log.Error(ex);
+                        Log.For(this).Error(ex);
                         Picked.RaiseOn(Thread.Pool, new MediaPickedEventArgs(RequestId, ex));
                         Finish();
                     }
@@ -167,10 +167,10 @@
                                 using (var output = File.Create(Result.FullName))
                                     input.CopyTo(output);
                             }
-                            catch
+                            catch (Exception ex)
                             {
                                 Result = null;
-                                Device.Log.Error("Failed to save the picked file.");
+                                Log.For(this).Error(ex, "Failed to save the picked file.");
                             }
                         }
                     }

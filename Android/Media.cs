@@ -154,7 +154,7 @@
             }
             catch (Exception ex)
             {
-                Device.Log.Error("Failed to save to scan file: " + ex);
+                Log.For(typeof(Media)).Error(ex, "Failed to save to scan file.");
             }
 
             var publicUri = Android.Net.Uri.FromFile(new Java.IO.File(destination.FullName));

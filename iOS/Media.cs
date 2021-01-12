@@ -73,13 +73,13 @@
 
         static Task<FileInfo> LaunchMediaPicker(UIImagePickerControllerSourceType sourceType, string mediaType, Device.MediaCaptureSettings settings)
         {
-            Log.Warning("LaunchMediaPicker called");
+            Log.For(typeof(Media)).Warning("LaunchMediaPicker called");
             return Thread.UI.Run(() => DoLaunchMediaPicker(sourceType, mediaType, settings));
         }
 
         static async Task<FileInfo> DoLaunchMediaPicker(UIImagePickerControllerSourceType sourceType, string mediaType, Device.MediaCaptureSettings settings)
         {
-            Log.Warning("DoLaunchMediaPicker called");
+            Log.For(typeof(Media)).Warning("DoLaunchMediaPicker called");
             var controller = UIRuntime.Window.RootViewController;
 
             while (controller.PresentedViewController != null)

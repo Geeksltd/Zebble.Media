@@ -36,7 +36,7 @@
                 var info = await DeviceInformation.FindAllAsync(DeviceClass.VideoCapture).AsTask();
                 EnabledDeviceIds = info.Where(x => x.IsEnabled).Select(x => x.Id).ToList();
             }
-            catch (Exception ex) { Device.Log.Error("Failed to detect cameras: " + ex); }
+            catch (Exception ex) { Log.For(typeof(Media)).Error(ex, "Failed to detect cameras."); }
         }
 
         public static async Task<bool> IsCameraAvailable()
