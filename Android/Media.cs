@@ -6,6 +6,7 @@
     using Android.Provider;
     using System;
     using System.IO;
+    using System.Linq;
     using System.Threading.Tasks;
     using Zebble.Services;
     using Olive;
@@ -37,59 +38,60 @@
 
         static async Task<FileInfo> DoTakePhoto(Device.MediaCaptureSettings settings)
         {
-            var result = await TakeMedia("image/*", MediaStore.ActionImageCapture, settings);
+            var result = (await TakeMedia("image/*", MediaStore.ActionImageCapture, enableMultipleSelection: false, settings)).FirstOrDefault();
             await FixOrientation(result);
             return result;
         }
 
-        static Task<FileInfo> DoTakeVideo(Device.MediaCaptureSettings settings)
+        static async Task<FileInfo> DoTakeVideo(Device.MediaCaptureSettings settings)
         {
-            return TakeMedia("video/*", MediaStore.ActionVideoCapture, settings);
+            return (await TakeMedia("video/*", MediaStore.ActionVideoCapture, enableMultipleSelection: false, settings)).FirstOrDefault();
         }
 
-        static async Task<FileInfo> DoPickPhoto()
+        static async Task<FileInfo[]> DoPickPhoto(bool enableMultipleSelection)
         {
-            var result = await TakeMedia("image/*", Intent.ActionPick, new Device.MediaCaptureSettings());
-            await FixOrientation(result);
+            var result = await TakeMedia("image/*", Intent.ActionPick, enableMultipleSelection, new Device.MediaCaptureSettings());
+            foreach (var r in result) await FixOrientation(r);
             return result;
         }
 
-        static Task<FileInfo> DoPickVideo()
+        static Task<FileInfo[]> DoPickVideo(bool enableMultipleSelection)
         {
-            return TakeMedia("video/*", Intent.ActionPick, new Device.MediaCaptureSettings());
+            return TakeMedia("video/*", Intent.ActionPick, enableMultipleSelection, new Device.MediaCaptureSettings());
         }
 
-        static Task<FileInfo> TakeMedia(string type, string action, Device.MediaCaptureSettings options)
+        static Task<FileInfo[]> TakeMedia(string type, string action, bool enableMultipleSelection, Device.MediaCaptureSettings options)
         {
             var id = NextRequestId++;
 
-            var completionSource = new TaskCompletionSource<FileInfo>(id);
+            var completionSource = new TaskCompletionSource<FileInfo[]>(id);
 
-            UIRuntime.CurrentActivity.StartActivity(CreateIntent(id, type, action, options));
+            UIRuntime.CurrentActivity.StartActivity(CreateIntent(id, type, action, enableMultipleSelection, options));
 
-            void handler(MediaPickedEventArgs e)
+            void OnMediaPicked(MediaPickedEventArgs e)
             {
                 GC.Collect();
-                PickerActivity.Picked.RemoveHandler((Action<MediaPickedEventArgs>)handler);
+                PickerActivity.Picked.RemoveHandler(OnMediaPicked);
 
                 if (e.RequestId != id) return;
 
-                if (!e.Media.Exists()) completionSource.TrySetResult(null);
+                if (e.Media.Any(x => !x.Exists())) completionSource.TrySetResult(null);
                 else if (e.Error != null) completionSource.SetException(e.Error);
                 else completionSource.TrySetResult(e.Media);
             }
 
-            PickerActivity.Picked.Handle((Action<MediaPickedEventArgs>)handler);
+            PickerActivity.Picked.Handle(OnMediaPicked);
             GC.Collect();
             return completionSource.Task;
         }
 
-        static Intent CreateIntent(int id, string type, string action, Device.MediaCaptureSettings settings)
+        static Intent CreateIntent(int id, string type, string action, bool enableMultipleSelection, Device.MediaCaptureSettings settings)
         {
             var result = new Intent(UIRuntime.CurrentActivity, typeof(PickerActivity))
             .PutExtra("id", id)
             .PutExtra("type", type)
             .PutExtra("action", action)
+            .PutExtra(Intent.ExtraAllowMultiple, enableMultipleSelection)
             .SetFlags(ActivityFlags.NewTask);
 
             if (settings.Camera == CameraOption.Front)

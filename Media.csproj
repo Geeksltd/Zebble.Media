@@ -68,6 +68,9 @@
   <ItemGroup>
     <PackageReference Include="Zebble" Version="4.5.447" />
   </ItemGroup>
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.iOS')) ">
+    <PackageReference Include="GMImagePicker.Xamarin" Version="2.5.1" />
+  </ItemGroup>
   <ItemGroup>
     <Folder Include="Android\" />
     <Folder Include="iOS\" />

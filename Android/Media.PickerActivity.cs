@@ -9,7 +9,9 @@
     using AndroidX.Core.Content;
     using System;
     using System.IO;
+    using System.Linq;
     using System.Threading.Tasks;
+    using System.Collections.Generic;
     using Uri = Android.Net.Uri;
     using Olive;
 
@@ -21,13 +23,12 @@
         {
             internal static readonly AsyncEvent<MediaPickedEventArgs> Picked = new AsyncEvent<MediaPickedEventArgs>();
 
-            FileInfo Result;
             int RequestId;
             bool FrontCamera, IsVideo;
             string Type, Action;
+            bool AllowMultiple;
             int MaxSeconds;
             VideoQuality VideoQuality;
-            Java.IO.File TempStorageFile;
             Uri FilePath;
 
             protected override void OnSaveInstanceState(Bundle outState)
@@ -35,6 +36,7 @@
                 outState.PutInt("id", RequestId);
                 outState.PutString("type", Type);
                 outState.PutString("action", Action);
+                outState.PutBoolean(Intent.ExtraAllowMultiple, AllowMultiple);
                 outState.PutInt(MediaStore.ExtraDurationLimit, MaxSeconds);
                 outState.PutInt(MediaStore.ExtraVideoQuality, (int)VideoQuality);
                 outState.PutBoolean("front", FrontCamera);
@@ -52,17 +54,20 @@
 
                 RequestId = bundle.GetInt("id");
                 Action = bundle.GetString("action");
+                AllowMultiple = bundle.GetBoolean(Intent.ExtraAllowMultiple);
                 Type = bundle.GetString("type");
                 FrontCamera = bundle.GetBoolean("front");
                 if (Type == "video/*") IsVideo = true;
-
-                Result = Device.IO.CreateTempDirectory(globalCache: false).GetFile("File." + "mp4".OnlyWhen(IsVideo).Or("jpg"));
 
                 using (var intent = new Intent(Action))
                 {
                     try
                     {
-                        if (Action == Intent.ActionPick) intent.SetType(Type);
+                        if (Action == Intent.ActionPick)
+                        {
+                            intent.SetType(Type);
+                            intent.PutExtra(Intent.ExtraAllowMultiple, AllowMultiple);
+                        }
                         else
                         {
                             if (IsVideo)
@@ -76,7 +81,6 @@
 
                             if (FrontCamera)
                                 intent.PutExtra("android.intent.extras.CAMERA_FACING", 1);
-
 
                             var file = new Java.IO.File(PrepareTempStorageFile().FullName);
                             Uri path;
@@ -109,32 +113,44 @@
                 {
                     Finish();
                     await Task.Delay(50);
-                    await Picked.RaiseOn(Thread.Pool, new MediaPickedEventArgs(requestCode, default(FileInfo)));
+                    await Picked.RaiseOn(Thread.Pool, new MediaPickedEventArgs(requestCode, default(FileInfo[])));
                 }
                 else
                 {
-                    SaveResult(data?.Data);
+                    var results = new List<FileInfo>();
+                    if (AllowMultiple && data?.ClipData?.ItemCount > 0)
+                    {
+                        for (int i = 0; i < data?.ClipData.ItemCount; i++)
+                            results.Add(SaveResult(data?.ClipData.GetItemAt(i).Uri));
+                    }
+                    else
+                        results.Add(SaveResult(data?.Data));
+
+                    var media = results.ExceptNull().ToArray();
 
                     Finish();
                     await Task.Delay(50);
-                    await Picked.RaiseOn(Thread.Pool, new MediaPickedEventArgs(RequestId, Result));
+                    await Picked.RaiseOn(Thread.Pool, new MediaPickedEventArgs(RequestId, media));
                 }
             }
 
-            void SaveResult(Uri uri)
+            FileInfo SaveResult(Uri uri)
             {
+                var result = IO.CreateTempDirectory(globalCache: false).GetFile($"File.{ShortGuid.NewGuid()}." + "mp4".OnlyWhen(IsVideo).Or("jpg"));
+
                 var fileUri = uri ?? FilePath;
-                if (TempStorageFile?.Exists() == true)
-                    File.Move(TempStorageFile.ToString(), Result.FullName);
-                else if (fileUri?.Scheme == "file")
+
+                if (fileUri?.Scheme == "file")
                 {
                     var file = new System.Uri(fileUri.ToString()).LocalPath;
-                    if (file != Result.FullName) File.Copy(file, Result.FullName);
+                    if (file != result.FullName) File.Copy(file, result.FullName);
                 }
-                else if (fileUri?.Scheme == "content") SaveContentToFile(fileUri);
+                else if (fileUri?.Scheme == "content") SaveContentToFile(fileUri, result);
+
+                return result;
             }
 
-            void SaveContentToFile(Uri uri)
+            void SaveContentToFile(Uri uri, FileInfo result)
             {
                 ICursor cursor = null;
                 try
@@ -146,7 +162,7 @@
                     cursor = ContentResolver.Query(uri, proj, null, null, null);
                     if (cursor == null || !cursor.MoveToNext())
                     {
-                        Result = null;
+                        result = null;
                     }
                     else
                     {
@@ -157,19 +173,19 @@
 
                         if (contentPath?.StartsWith("file", caseSensitive: false) == true)
                         {
-                            File.Copy(contentPath, Result.FullName);
+                            File.Copy(contentPath, result.FullName);
                         }
                         else
                         {
                             try
                             {
                                 using (var input = ContentResolver.OpenInputStream(uri))
-                                using (var output = File.Create(Result.FullName))
+                                using (var output = File.Create(result.FullName))
                                     input.CopyTo(output);
                             }
                             catch (Exception ex)
                             {
-                                Result = null;
+                                result = null;
                                 Log.For(this).Error(ex, "Failed to save the picked file.");
                             }
                         }

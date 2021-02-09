@@ -56,19 +56,9 @@
             return LaunchMediaPicker(UIImagePickerControllerSourceType.Camera, PHOTO_TYPE, settings);
         }
 
-        static Task<FileInfo> DoPickPhoto()
-        {
-            return LaunchMediaPicker(UIImagePickerControllerSourceType.PhotoLibrary, PHOTO_TYPE, new Device.MediaCaptureSettings());
-        }
-
         static Task<FileInfo> DoTakeVideo(Device.MediaCaptureSettings settings)
         {
             return LaunchMediaPicker(UIImagePickerControllerSourceType.Camera, VIDEO_TYPE, settings);
-        }
-
-        static Task<FileInfo> DoPickVideo()
-        {
-            return LaunchMediaPicker(UIImagePickerControllerSourceType.PhotoLibrary, VIDEO_TYPE, new Device.MediaCaptureSettings());
         }
 
         static Task<FileInfo> LaunchMediaPicker(UIImagePickerControllerSourceType sourceType, string mediaType, Device.MediaCaptureSettings settings)

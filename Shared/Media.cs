@@ -2,6 +2,7 @@
 {
     using System;
     using System.IO;
+    using System.Linq;
     using System.Threading.Tasks;
 
     public static partial class Media
@@ -73,6 +74,17 @@
         /// <summary>Saves a picked photo into a local temp folder in the device's cache folder and returns it.</summary>
         public static async Task<FileInfo> PickPhoto(OnError errorAction = OnError.Alert)
         {
+            return (await PickPhotoCore(enableMultipleSelection: false, errorAction)).FirstOrDefault();
+        }
+
+        /// <summary>Saves a set of picked photos into a local temp folder in the device's cache folder and returns them.</summary>
+        public static Task<FileInfo[]> PickMultiplePhotos(OnError errorAction = OnError.Alert)
+        {
+            return PickPhotoCore(enableMultipleSelection: true, errorAction);
+        }
+
+        static async Task<FileInfo[]> PickPhotoCore(bool enableMultipleSelection, OnError errorAction = OnError.Alert)
+        {
             if (!SupportsPickingPhoto())
             {
                 await errorAction.Apply("Your device does not support picking photos.");
@@ -87,7 +99,7 @@
 
             try
             {
-                return await Thread.UI.Run(DoPickPhoto);
+                return await Thread.UI.Run(() => DoPickPhoto(enableMultipleSelection));
             }
             catch (Exception ex)
             {
@@ -98,6 +110,17 @@
 
         /// <summary>Saves a picked video into a local temp folder in the device's cache folder and returns it.</summary>
         public static async Task<FileInfo> PickVideo(OnError errorAction = OnError.Alert)
+        {
+            return (await PickVideoCore(enableMultipleSelection: false, errorAction)).FirstOrDefault();
+        }
+
+        /// <summary>Saves a set of picked videos into a local temp folder in the device's cache folder and returns them.</summary>
+        public static async Task<FileInfo> PickMultipleVideos(OnError errorAction = OnError.Alert)
+        {
+            return (await PickVideoCore(enableMultipleSelection: true, errorAction)).FirstOrDefault();
+        }
+
+        static async Task<FileInfo[]> PickVideoCore(bool enableMultipleSelection, OnError errorAction = OnError.Alert)
         {
             if (!SupportsPickingVideo())
             {
@@ -113,7 +136,7 @@
 
             try
             {
-                return await Thread.UI.Run(DoPickVideo);
+                return await Thread.UI.Run(() => DoPickVideo(enableMultipleSelection));
             }
             catch (Exception ex)
             {

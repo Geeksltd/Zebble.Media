@@ -85,33 +85,37 @@
             return await video.SaveToTempFile();
         }
 
-        static async Task<FileInfo> DoPickPhoto()
+        static Task<FileInfo[]> DoPickPhoto(bool enableMultipleSelection)
         {
-            var picker = new FileOpenPicker
-            {
-                SuggestedStartLocation = PickerLocationId.PicturesLibrary,
-                ViewMode = PickerViewMode.Thumbnail
-            };
-
-            picker.FileTypeFilter.AddRange(SupportedImageExtensions);
-
-            var picked = await picker.PickSingleFileAsync();
-            return await picked.SaveToTempFile();
+            return DoPickAsset(PickerLocationId.PicturesLibrary, SupportedImageExtensions, enableMultipleSelection);
         }
 
-        static async Task<FileInfo> DoPickVideo()
+        static Task<FileInfo[]> DoPickVideo(bool enableMultipleSelection)
+        {
+            return DoPickAsset(PickerLocationId.VideosLibrary, SupportedVideoExtensions, enableMultipleSelection);
+        }
+
+        static async Task<FileInfo[]> DoPickAsset(PickerLocationId location, string[] extensions, bool enableMultipleSelection)
         {
             var picker = new FileOpenPicker
             {
-                SuggestedStartLocation = PickerLocationId.VideosLibrary,
+                SuggestedStartLocation = location,
                 ViewMode = PickerViewMode.Thumbnail
             };
 
-            picker.FileTypeFilter.AddRange(SupportedVideoExtensions);
+            picker.FileTypeFilter.AddRange(extensions);
 
-            var result = await picker.PickSingleFileAsync();
+            if (enableMultipleSelection)
+            {
+                var files = await picker.PickMultipleFilesAsync().AsTask();
+                var result = new List<FileInfo>();
+                foreach (var item in files.ToList())
+                    result.Add(await item.SaveToTempFile());
+                return result.ToArray();
+            }
 
-            return await result.SaveToTempFile();
+            var picked = await picker.PickSingleFileAsync();
+            return new[] { await picked.SaveToTempFile() };
         }
 
         static CameraCaptureUIMaxVideoResolution ToResolution(VideoQuality quality)
