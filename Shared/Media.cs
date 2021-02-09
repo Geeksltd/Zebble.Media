@@ -115,9 +115,9 @@
         }
 
         /// <summary>Saves a set of picked videos into a local temp folder in the device's cache folder and returns them.</summary>
-        public static async Task<FileInfo> PickMultipleVideos(OnError errorAction = OnError.Alert)
+        public static Task<FileInfo[]> PickMultipleVideos(OnError errorAction = OnError.Alert)
         {
-            return (await PickVideoCore(enableMultipleSelection: true, errorAction)).FirstOrDefault();
+            return PickVideoCore(enableMultipleSelection: true, errorAction);
         }
 
         static async Task<FileInfo[]> PickVideoCore(bool enableMultipleSelection, OnError errorAction = OnError.Alert)
