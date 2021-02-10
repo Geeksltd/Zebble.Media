@@ -44,7 +44,7 @@
                 base.OnSaveInstanceState(outState);
             }
 
-            FileInfo PrepareTempStorageFile() => IO.CreateTempFile(IsVideo ? ".mp4" : "jpg");
+            FileInfo PrepareTempStorageFile() => IO.CreateTempFile(IsVideo ? ".mp4" : ".jpg");
 
             protected override void OnCreate(Bundle savedInstanceState)
             {
