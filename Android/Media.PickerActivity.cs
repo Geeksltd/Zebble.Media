@@ -89,7 +89,7 @@
                                 path = FileProvider.GetUriForFile(Application.Context, $"{packageName}.fileprovider", file);
                             else path = Uri.FromFile(file);
 
-                            intent.PutExtra(MediaStore.ExtraOutput, path);
+                            intent.PutExtra(MediaStore.ExtraOutput, path.ToString());
                             FilePath = path;
                         }
 
@@ -108,6 +108,9 @@
             protected override async void OnActivityResult(int requestCode, Result resultCode, Intent data)
             {
                 base.OnActivityResult(requestCode, resultCode, data);
+
+                if (requestCode != RequestId)
+                    return;
 
                 if (resultCode == Android.App.Result.Canceled)
                 {
