@@ -26,7 +26,7 @@
             int RequestId;
             bool FrontCamera, IsVideo;
             string Type, Action;
-            bool AllowMultiple;
+            bool AllowMultiple, PurgeCameraRoll;
             int MaxSeconds;
             VideoQuality VideoQuality;
             Uri FilePath;
@@ -37,6 +37,7 @@
                 outState.PutString("type", Type);
                 outState.PutString("action", Action);
                 outState.PutBoolean(Intent.ExtraAllowMultiple, AllowMultiple);
+                outState.PutBoolean("purge-camera-roll", PurgeCameraRoll);
                 outState.PutInt(MediaStore.ExtraDurationLimit, MaxSeconds);
                 outState.PutInt(MediaStore.ExtraVideoQuality, (int)VideoQuality);
                 outState.PutBoolean("front", FrontCamera);
@@ -55,6 +56,7 @@
                 RequestId = bundle.GetInt("id");
                 Action = bundle.GetString("action");
                 AllowMultiple = bundle.GetBoolean(Intent.ExtraAllowMultiple);
+                PurgeCameraRoll = bundle.GetBoolean("purge-camera-roll");
                 Type = bundle.GetString("type");
                 FrontCamera = bundle.GetBoolean("front");
                 if (Type == "video/*") IsVideo = true;
@@ -149,6 +151,9 @@
                     if (file != result.FullName) File.Copy(file, result.FullName);
                 }
                 else if (fileUri?.Scheme == "content") SaveContentToFile(fileUri, result);
+
+                try { if (PurgeCameraRoll) ContentResolver.Delete(fileUri, null, null); }
+                catch { }
 
                 return result;
             }

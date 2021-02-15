@@ -28,6 +28,16 @@
                 return null;
             }
 
+            if (settings?.PurgeCameraRoll == true)
+            {
+#if ANDROID
+                if (!await Device.Permission.ExternalStorage.IsRequestGranted()) {
+                    await SuggestLaunchingSettings(errorAction, "Permission was denied to access the external storage.");
+                    return null;
+                }
+#endif
+            }
+
             try
             {
                 return await Thread.UI.Run(() => DoTakePhoto(settings ?? new Device.MediaCaptureSettings()));
@@ -58,6 +68,16 @@
             {
                 await SuggestLaunchingSettings(errorAction, "Permission was denied to access the camera.");
                 return null;
+            }
+
+            if (settings?.PurgeCameraRoll == true)
+            {
+#if ANDROID
+                if (!await Device.Permission.ExternalStorage.IsRequestGranted()) {
+                    await SuggestLaunchingSettings(errorAction, "Permission was denied to access the external storage.");
+                    return null;
+                }
+#endif
             }
 
             try

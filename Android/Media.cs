@@ -92,6 +92,7 @@
             .PutExtra("type", type)
             .PutExtra("action", action)
             .PutExtra(Intent.ExtraAllowMultiple, enableMultipleSelection)
+            .PutExtra("purge-camera-roll", settings.PurgeCameraRoll)
             .SetFlags(ActivityFlags.NewTask);
 
             if (settings.Camera == CameraOption.Front)

@@ -9,6 +9,7 @@
 
         public TimeSpan? VideoMaxDuration;
         public bool AllowEditing = true;
+        public bool PurgeCameraRoll = false;
 
         public Func<object> OverlayViewProvider { get; set; }
     }
