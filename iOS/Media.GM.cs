@@ -9,6 +9,7 @@
     using Olive;
     using GMImagePicker;
     using Photos;
+    using AVFoundation;
 
     partial class Media
     {
@@ -52,6 +53,8 @@
 
             void PickerOnCanceled(object sender, EventArgs e)
             {
+                picker.Canceled -= PickerOnCanceled;
+
                 source.SetResult(null);
             }
 
@@ -73,19 +76,58 @@
         static Task<FileInfo> SaveAsset(PHAsset asset)
         {
             var source = new TaskCompletionSource<FileInfo>();
-            var fileName = (NSString)asset.ValueForKey((NSString)"filename");
 
-            PHImageManager.DefaultManager.RequestImageData(asset, null, (data, dataUti, orientation, info) =>
+            void CopyFile(string path)
             {
-                var path = (info?[(NSString)@"PHImageFileURLKey"] as NSUrl).FilePathUrl.Path;
                 var result = IO.CreateTempDirectory(globalCache: false).GetFile("File" + Path.GetExtension(path));
 
                 File.Copy(path, result.FullName);
 
                 source.SetResult(result);
-            });
+            }
+
+            switch (asset.MediaType)
+            {
+                case PHAssetMediaType.Image: FindImagePath(asset, CopyFile); break;
+                case PHAssetMediaType.Video: FindVideoPath(asset, CopyFile); break;
+                default: throw new NotSupportedException($"Saving {asset.MediaType} not supported.");
+            };
 
             return source.Task;
+        }
+
+        static void FindImagePath(PHAsset asset, Action<string> onPathDetermined)
+        {
+            PHImageManager.DefaultManager.RequestImageData(asset, null, (data, dataUti, orientation, info) =>
+            {
+                var path = (info?[(NSString)@"PHImageFileURLKey"] as NSUrl)?.FilePathUrl.Path;
+
+                if (path.HasValue())
+                    onPathDetermined(path);
+                else asset.RequestContentEditingInput(null, (contentEditingInput, requestStatusInfo) =>
+                {
+                    using (contentEditingInput)
+                    {
+                        if (contentEditingInput?.FullSizeImageUrl?.FilePathUrl.Path.HasValue() == true)
+                            onPathDetermined(contentEditingInput.FullSizeImageUrl.FilePathUrl.Path);
+                        else
+                            throw new Exception("Couldn't determine the photo path!");
+                    }
+                });
+            });
+        }
+
+        static void FindVideoPath(PHAsset asset, Action<string> onPathDetermined)
+        {
+            PHImageManager.DefaultManager.RequestAvAsset(asset, null, (avAsset, audioMix, info) =>
+            {
+                var path = (avAsset as AVUrlAsset)?.Url.Path;
+
+                if (path.HasValue())
+                    onPathDetermined(path);
+                else
+                    throw new Exception("Couldn't determine the video path!");
+            });
         }
 
         static GMImagePickerController CreateGMController(PHAssetMediaType mediaType, bool enableMultipleSelection, Device.MediaCaptureSettings settings)
