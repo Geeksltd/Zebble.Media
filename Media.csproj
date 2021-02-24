@@ -6,7 +6,7 @@
     <RootNamespace>Zebble</RootNamespace>
     <PackageId>Zebble.Media</PackageId>
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
-    <Version>1.1.131.0</Version>
+    <Version>1.1.132.0</Version>
     <PackOnBuild>true</PackOnBuild>
     <NeutralLanguage>en</NeutralLanguage>
     <DefineConstants>$(DefineConstants)</DefineConstants>

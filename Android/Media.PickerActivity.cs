@@ -14,6 +14,7 @@
     using System.Collections.Generic;
     using Uri = Android.Net.Uri;
     using Olive;
+    using Android.Graphics;
 
     partial class Media
     {
@@ -114,7 +115,7 @@
                 if (requestCode != RequestId)
                     return;
 
-                if (resultCode == Android.App.Result.Canceled)
+                if (resultCode == Result.Canceled)
                 {
                     Finish();
                     await Task.Delay(50);
@@ -128,8 +129,12 @@
                         for (int i = 0; i < data?.ClipData.ItemCount; i++)
                             results.Add(SaveResult(data?.ClipData.GetItemAt(i).Uri));
                     }
-                    else
-                        results.Add(SaveResult(data?.Data));
+                    else if (data.Data == null)
+                    {
+                        var bitmap = (Bitmap)data.Extras.Get("data");
+                        results.Add(SaveResult(bitmap));
+                    }
+                    else results.Add(SaveResult(data?.Data));
 
                     var media = results.ExceptNull().ToArray();
 
@@ -154,6 +159,15 @@
 
                 try { if (PurgeCameraRoll) ContentResolver.Delete(fileUri, null, null); }
                 catch { }
+
+                return result;
+            }
+
+            FileInfo SaveResult(Bitmap bitmap)
+            {
+                var result = IO.CreateTempDirectory(globalCache: false).GetFile($"File.{ShortGuid.NewGuid()}.jpg");
+                using (var output = new FileStream(result.FullName, FileMode.Create))
+                    bitmap.Compress(Bitmap.CompressFormat.Jpeg, 100, output);
 
                 return result;
             }
