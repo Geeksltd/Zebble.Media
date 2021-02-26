@@ -79,9 +79,21 @@
 
             void CopyFile(string path)
             {
-                var result = IO.CreateTempDirectory(globalCache: false).GetFile("File" + Path.GetExtension(path));
+                FileInfo result;
+                var ext = Path.GetExtension(path);
+                if (asset.MediaType == PHAssetMediaType.Image && ext.ToLower().Contains("heic"))
+                {
+                    result = IO.CreateTempDirectory(globalCache: false).GetFile("File.jpg");
 
-                File.Copy(path, result.FullName);
+                    var sourceFile = File.ReadAllBytes(path);
+                    var jpgData = new UIImage(NSData.FromArray(sourceFile)).AsJPEG().ToArray();
+                    result.WriteAllBytes(jpgData);
+                }
+                else
+                {
+                    result = IO.CreateTempDirectory(globalCache: false).GetFile("File" + ext);
+                    File.Copy(path, result.FullName);
+                }
 
                 source.SetResult(result);
             }
