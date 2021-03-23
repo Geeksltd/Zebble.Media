@@ -15,21 +15,21 @@
     {
         static Task<FileInfo[]> DoPickPhoto(bool enableMultipleSelection)
         {
-            return LaunchGMMediaPicker(PHAssetMediaType.Image, enableMultipleSelection, new Device.MediaCaptureSettings());
+            return LaunchGMMediaPicker(PHAssetMediaType.Image, enableMultipleSelection, new MediaCaptureSettings());
         }
 
         static Task<FileInfo[]> DoPickVideo(bool enableMultipleSelection)
         {
-            return LaunchGMMediaPicker(PHAssetMediaType.Video, enableMultipleSelection, new Device.MediaCaptureSettings());
+            return LaunchGMMediaPicker(PHAssetMediaType.Video, enableMultipleSelection, new MediaCaptureSettings());
         }
 
-        static Task<FileInfo[]> LaunchGMMediaPicker(PHAssetMediaType mediaType, bool enableMultipleSelection, Device.MediaCaptureSettings settings)
+        static Task<FileInfo[]> LaunchGMMediaPicker(PHAssetMediaType mediaType, bool enableMultipleSelection, MediaCaptureSettings settings)
         {
             Log.For(typeof(Media)).Warning("LaunchMediaPicker called");
             return Thread.UI.Run(() => DoLaunchGMMediaPicker(mediaType, enableMultipleSelection, settings));
         }
 
-        static async Task<FileInfo[]> DoLaunchGMMediaPicker(PHAssetMediaType mediaType, bool enableMultipleSelection, Device.MediaCaptureSettings settings)
+        static async Task<FileInfo[]> DoLaunchGMMediaPicker(PHAssetMediaType mediaType, bool enableMultipleSelection, MediaCaptureSettings settings)
         {
             Log.For(typeof(Media)).Warning("DoLaunchMediaPicker called");
             var controller = UIRuntime.Window.RootViewController;
@@ -65,7 +65,7 @@
 
             if (usePopup)
                 picker.ModalPresentationStyle = UIModalPresentationStyle.Popover;
-            else if (Device.OS.IsAtLeastiOS(9))
+            else if (OS.IsAtLeastiOS(9))
                 picker.ModalPresentationStyle = UIModalPresentationStyle.OverCurrentContext;
 
             controller.PresentViewController(picker, animated: true, completionHandler: null);
@@ -98,9 +98,17 @@
                 source.SetResult(result);
             }
 
+            void SaveFile(byte[] data)
+            {
+                var jpgFile = IO.CreateTempDirectory(globalCache: false).GetFile("File.jpg");
+                jpgFile.WriteAllBytes(data);
+
+                source.SetResult(jpgFile);
+            }
+
             switch (asset.MediaType)
             {
-                case PHAssetMediaType.Image: FindImagePath(asset, CopyFile); break;
+                case PHAssetMediaType.Image: FindImagePath(asset, CopyFile, SaveFile); break;
                 case PHAssetMediaType.Video: FindVideoPath(asset, CopyFile); break;
                 default: throw new NotSupportedException($"Saving {asset.MediaType} not supported.");
             };
@@ -108,7 +116,7 @@
             return source.Task;
         }
 
-        static void FindImagePath(PHAsset asset, Action<string> onPathDetermined)
+        static void FindImagePath(PHAsset asset, Action<string> onPathDetermined, Action<byte[]> OnImageDetermined)
         {
             PHImageManager.DefaultManager.RequestImageData(asset, null, (data, dataUti, orientation, info) =>
             {
@@ -123,7 +131,7 @@
                         if (contentEditingInput?.FullSizeImageUrl?.FilePathUrl.Path.HasValue() == true)
                             onPathDetermined(contentEditingInput.FullSizeImageUrl.FilePathUrl.Path);
                         else
-                            throw new Exception("Couldn't determine the photo path!");
+                            OnImageDetermined(new UIImage(data).AsJPEG().ToArray());
                     }
                 });
             });
@@ -142,7 +150,7 @@
             });
         }
 
-        static GMImagePickerController CreateGMController(PHAssetMediaType mediaType, bool enableMultipleSelection, Device.MediaCaptureSettings settings)
+        static GMImagePickerController CreateGMController(PHAssetMediaType mediaType, bool enableMultipleSelection, MediaCaptureSettings settings)
         {
             return new GMImagePickerController
             {
