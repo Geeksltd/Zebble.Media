@@ -51,23 +51,33 @@
 
         public static bool SupportsPickingVideo() => true;
 
-        static Task<FileInfo> DoTakePhoto(Device.MediaCaptureSettings settings)
+        static Task<FileInfo> DoTakePhoto(MediaCaptureSettings settings)
         {
             return LaunchMediaPicker(UIImagePickerControllerSourceType.Camera, PHOTO_TYPE, settings);
         }
 
-        static Task<FileInfo> DoTakeVideo(Device.MediaCaptureSettings settings)
+        static Task<FileInfo> DoTakeVideo(MediaCaptureSettings settings)
         {
             return LaunchMediaPicker(UIImagePickerControllerSourceType.Camera, VIDEO_TYPE, settings);
         }
 
-        static Task<FileInfo> LaunchMediaPicker(UIImagePickerControllerSourceType sourceType, string mediaType, Device.MediaCaptureSettings settings)
+        static async Task<FileInfo[]> DoPickPhoto(bool enableMultipleSelection)
+        {
+            return new FileInfo[1] { await LaunchMediaPicker(UIImagePickerControllerSourceType.PhotoLibrary, PHOTO_TYPE, new MediaCaptureSettings()) };
+        }
+
+        static async Task<FileInfo[]> DoPickVideo(bool enableMultipleSelection)
+        {
+            return new FileInfo[1] { await LaunchMediaPicker(UIImagePickerControllerSourceType.PhotoLibrary, VIDEO_TYPE, new MediaCaptureSettings()) };
+        }
+
+        static Task<FileInfo> LaunchMediaPicker(UIImagePickerControllerSourceType sourceType, string mediaType, MediaCaptureSettings settings)
         {
             Log.For(typeof(Media)).Warning("LaunchMediaPicker called");
             return Thread.UI.Run(() => DoLaunchMediaPicker(sourceType, mediaType, settings));
         }
 
-        static async Task<FileInfo> DoLaunchMediaPicker(UIImagePickerControllerSourceType sourceType, string mediaType, Device.MediaCaptureSettings settings)
+        static async Task<FileInfo> DoLaunchMediaPicker(UIImagePickerControllerSourceType sourceType, string mediaType, MediaCaptureSettings settings)
         {
             Log.For(typeof(Media)).Warning("DoLaunchMediaPicker called");
             var controller = UIRuntime.Window.RootViewController;
@@ -89,7 +99,7 @@
             }
             else
             {
-                if (Device.OS.IsAtLeastiOS(9))
+                if (OS.IsAtLeastiOS(9))
                     picker.ModalPresentationStyle = UIModalPresentationStyle.OverCurrentContext;
 
                 controller.PresentViewController(picker, animated: true, completionHandler: null);
@@ -98,7 +108,7 @@
             return await pickerDelegate.CompletionSource.Task;
         }
 
-        static UIImagePickerController CreateController(PickerDelegate mpDelegate, UIImagePickerControllerSourceType sourceType, string mediaType, Device.MediaCaptureSettings settings)
+        static UIImagePickerController CreateController(PickerDelegate mpDelegate, UIImagePickerControllerSourceType sourceType, string mediaType, MediaCaptureSettings settings)
         {
             var picker = new UIImagePickerController
             {

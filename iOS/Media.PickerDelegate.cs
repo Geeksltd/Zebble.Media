@@ -257,7 +257,7 @@
 
                 var meta = info[UIImagePickerController.MediaMetadata] as NSDictionary;
 
-                var result = Device.IO.CreateTempDirectory().GetFile("File.jpg");
+                var result = IO.CreateTempDirectory().GetFile("File.jpg");
 
                 image.AsJPEG(1).Save(result.FullName, atomically: true);
 
@@ -266,7 +266,7 @@
 
             FileInfo SaveVideo(NSDictionary info)
             {
-                var result = Device.IO.CreateTempDirectory().GetFile("File.mp4");
+                var result = IO.CreateTempDirectory().GetFile("File.mp4");
 
                 var url = (NSUrl)info[UIImagePickerController.MediaURL];
                 File.Copy(url.Path, result.FullName);

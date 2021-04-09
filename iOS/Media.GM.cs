@@ -13,20 +13,31 @@
 
     partial class Media
     {
-        static Task<FileInfo[]> DoPickPhoto(bool enableMultipleSelection)
-        {
-            return LaunchGMMediaPicker(PHAssetMediaType.Image, enableMultipleSelection, new MediaCaptureSettings());
-        }
+        //static Task<FileInfo[]> DoPickPhoto(bool enableMultipleSelection)
+        //{
+        //    return LaunchGMMediaPicker(PHAssetMediaType.Image, enableMultipleSelection, new MediaCaptureSettings());
+        //}
 
-        static Task<FileInfo[]> DoPickVideo(bool enableMultipleSelection)
-        {
-            return LaunchGMMediaPicker(PHAssetMediaType.Video, enableMultipleSelection, new MediaCaptureSettings());
-        }
+        //static Task<FileInfo[]> DoPickVideo(bool enableMultipleSelection)
+        //{
+        //    return LaunchGMMediaPicker(PHAssetMediaType.Video, enableMultipleSelection, new MediaCaptureSettings());
+        //}
 
         static Task<FileInfo[]> LaunchGMMediaPicker(PHAssetMediaType mediaType, bool enableMultipleSelection, MediaCaptureSettings settings)
         {
             Log.For(typeof(Media)).Warning("LaunchMediaPicker called");
-            return Thread.UI.Run(() => DoLaunchGMMediaPicker(mediaType, enableMultipleSelection, settings));
+            return Thread.UI.Run(() =>
+            {
+                try
+                {
+                    return DoLaunchGMMediaPicker(mediaType, enableMultipleSelection, settings);
+                }
+                catch (Exception ex)
+                {
+                    Log.For(typeof(Media)).Error(ex);
+                    return Task.FromResult<FileInfo[]>(null);
+                }
+            });
         }
 
         static async Task<FileInfo[]> DoLaunchGMMediaPicker(PHAssetMediaType mediaType, bool enableMultipleSelection, MediaCaptureSettings settings)

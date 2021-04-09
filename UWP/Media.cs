@@ -58,7 +58,7 @@
 
         public static bool SupportsPickingVideo() => true;
 
-        static async Task<FileInfo> DoTakePhoto(Device.MediaCaptureSettings settings)
+        static async Task<FileInfo> DoTakePhoto(MediaCaptureSettings settings)
         {
             var capture = new CameraCaptureUI();
             capture.PhotoSettings.Format = CameraCaptureUIPhotoFormat.Jpeg;
@@ -70,7 +70,7 @@
             return await result.SaveToTempFile();
         }
 
-        static async Task<FileInfo> DoTakeVideo(Device.MediaCaptureSettings settings)
+        static async Task<FileInfo> DoTakeVideo(MediaCaptureSettings settings)
         {
             var capture = new CameraCaptureUI();
             capture.VideoSettings.MaxResolution = ToResolution(settings.VideoQuality);

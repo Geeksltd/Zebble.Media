@@ -36,14 +36,14 @@
 
         public static bool SupportsPickingVideo() => true;
 
-        static async Task<FileInfo> DoTakePhoto(Device.MediaCaptureSettings settings)
+        static async Task<FileInfo> DoTakePhoto(MediaCaptureSettings settings)
         {
             var result = (await TakeMedia("image/*", MediaStore.ActionImageCapture, enableMultipleSelection: false, settings)).FirstOrDefault();
             await FixOrientation(result);
             return result;
         }
 
-        static async Task<FileInfo> DoTakeVideo(Device.MediaCaptureSettings settings)
+        static async Task<FileInfo> DoTakeVideo(MediaCaptureSettings settings)
         {
             return (await TakeMedia("video/*", MediaStore.ActionVideoCapture, enableMultipleSelection: false, settings)).FirstOrDefault();
         }
