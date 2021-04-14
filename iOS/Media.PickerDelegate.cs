@@ -12,6 +12,7 @@
     {
         internal class PickerDelegate : UIImagePickerControllerDelegate
         {
+            bool IsPickerDisposed;
             UIDeviceOrientation? Orientation;
             NSObject OrientationObserver;
             UIViewController Controller;
@@ -25,6 +26,7 @@
 
                 if (Controller != null)
                 {
+                    IsPickerDisposed = false;
                     UIDevice.CurrentDevice.BeginGeneratingDeviceOrientationNotifications();
                     OrientationObserver = NSNotificationCenter.DefaultCenter.AddObserver(UIDevice.OrientationDidChangeNotification, DidRotate);
                 }
@@ -102,27 +104,27 @@
                     onDismiss();
                     CompletionSource = new TaskCompletionSource<FileInfo>();
                 }
+                else if (Popover != null)
+                {
+                    Popover.Dismiss(animated: true);
+                    Popover.Dispose();
+                    Popover = null;
+
+                    onDismiss();
+                }
                 else
                 {
-                    if (Popover != null)
-                    {
-                        Popover.Dismiss(animated: true);
-                        Popover.Dispose();
-                        Popover = null;
-
-                        onDismiss();
-                    }
-                    else
-                    {
-                        picker.DismissViewController(animated: true, completionHandler: onDismiss);
-                        picker.Dispose();
-                    }
+                    picker.DismissViewController(animated: true, completionHandler: onDismiss);
+                    picker.Dispose();
                 }
+
+                IsPickerDisposed = true;
             }
 
             void RemoveOrientationChangeObserverAndNotifications()
             {
                 if (Controller == null) return;
+                if (IsPickerDisposed) return;
 
                 UIDevice.CurrentDevice.EndGeneratingDeviceOrientationNotifications();
                 NSNotificationCenter.DefaultCenter.RemoveObserver(OrientationObserver);
