@@ -63,12 +63,14 @@
 
         static async Task<FileInfo[]> DoPickPhoto(bool enableMultipleSelection)
         {
-            return new FileInfo[1] { await LaunchMediaPicker(UIImagePickerControllerSourceType.PhotoLibrary, PHOTO_TYPE, new MediaCaptureSettings()) };
+            return new FileInfo[1] { await LaunchMediaPicker(UIImagePickerControllerSourceType.PhotoLibrary, 
+                PHOTO_TYPE, new MediaCaptureSettings()).ConfigureAwait(false) };
         }
 
         static async Task<FileInfo[]> DoPickVideo(bool enableMultipleSelection)
         {
-            return new FileInfo[1] { await LaunchMediaPicker(UIImagePickerControllerSourceType.PhotoLibrary, VIDEO_TYPE, new MediaCaptureSettings()) };
+            return new FileInfo[1] { await LaunchMediaPicker(UIImagePickerControllerSourceType.PhotoLibrary,
+                VIDEO_TYPE, new MediaCaptureSettings()).ConfigureAwait(false) };
         }
 
         static Task<FileInfo> LaunchMediaPicker(UIImagePickerControllerSourceType sourceType, string mediaType, MediaCaptureSettings settings)
@@ -105,7 +107,7 @@
                 controller.PresentViewController(picker, animated: true, completionHandler: null);
             }
 
-            return await pickerDelegate.CompletionSource.Task;
+            return await pickerDelegate.CompletionSource.Task.ConfigureAwait(false);
         }
 
         static UIImagePickerController CreateController(PickerDelegate mpDelegate, UIImagePickerControllerSourceType sourceType, string mediaType, MediaCaptureSettings settings)
@@ -173,7 +175,7 @@
                 });
             }
 
-            await source.Task;
+            await source.Task.ConfigureAwait(false);
         }
     }
 }

@@ -8,7 +8,7 @@
     public static partial class Media
     {
         /// <summary>Saves a picked photo file into a local temp folder in the device's cache folder and returns it.</summary>
-        public static async Task<FileInfo> TakePhoto(Device.MediaCaptureSettings settings = null, OnError errorAction = OnError.Alert)
+        public static async Task<FileInfo> TakePhoto(MediaCaptureSettings settings = null, OnError errorAction = OnError.Alert)
         {
             if (!await IsCameraAvailable())
             {
@@ -22,7 +22,7 @@
                 return null;
             }
 
-            if (!await Device.Permission.Camera.IsRequestGranted())
+            if (!await Permission.Camera.IsRequestGranted())
             {
                 await SuggestLaunchingSettings(errorAction, "Permission was denied to access the camera.");
                 return null;
@@ -50,7 +50,7 @@
         }
 
         /// <summary>Saves a taken video into a local temp folder in the device's cache folder and returns it.</summary>
-        public static async Task<FileInfo> TakeVideo(Device.MediaCaptureSettings settings = null, OnError errorAction = OnError.Alert)
+        public static async Task<FileInfo> TakeVideo(MediaCaptureSettings settings = null, OnError errorAction = OnError.Alert)
         {
             if (!await IsCameraAvailable())
             {
@@ -64,7 +64,7 @@
                 return null;
             }
 
-            if (!await Device.Permission.Camera.IsRequestGranted())
+            if (!await Permission.Camera.IsRequestGranted())
             {
                 await SuggestLaunchingSettings(errorAction, "Permission was denied to access the camera.");
                 return null;
@@ -73,7 +73,7 @@
 #if ANDROID
             if (settings?.PurgeCameraRoll == true)
             {
-                if (!await Device.Permission.ExternalStorage.IsRequestGranted()) {
+                if (!await Permission.ExternalStorage.IsRequestGranted()) {
                     await SuggestLaunchingSettings(errorAction, "Permission was denied to access the external storage.");
                     return null;
                 }
@@ -82,7 +82,7 @@
 
             try
             {
-                return await Thread.UI.Run(() => DoTakeVideo(settings ?? new Device.MediaCaptureSettings()));
+                return await Thread.UI.Run(() => DoTakeVideo(settings ?? new MediaCaptureSettings()));
             }
             catch (Exception ex)
             {
@@ -94,7 +94,7 @@
         /// <summary>Saves a picked photo into a local temp folder in the device's cache folder and returns it.</summary>
         public static async Task<FileInfo> PickPhoto(OnError errorAction = OnError.Alert)
         {
-            return (await PickPhotoCore(enableMultipleSelection: false, errorAction)).FirstOrDefault();
+            return (await PickPhotoCore(enableMultipleSelection: false, errorAction).ConfigureAwait(false)).FirstOrDefault();
         }
 
         /// <summary>Saves a set of picked photos into a local temp folder in the device's cache folder and returns them.</summary>
@@ -111,7 +111,7 @@
                 return null;
             }
 
-            if (!await Device.Permission.Albums.IsRequestGranted())
+            if (!await Permission.Albums.IsRequestGranted())
             {
                 await SuggestLaunchingSettings(errorAction, "Permission was denied to access the device gallery.");
                 return null;
@@ -131,7 +131,7 @@
         /// <summary>Saves a picked video into a local temp folder in the device's cache folder and returns it.</summary>
         public static async Task<FileInfo> PickVideo(OnError errorAction = OnError.Alert)
         {
-            return (await PickVideoCore(enableMultipleSelection: false, errorAction)).FirstOrDefault();
+            return (await PickVideoCore(enableMultipleSelection: false, errorAction).ConfigureAwait(false)).FirstOrDefault();
         }
 
         /// <summary>Saves a set of picked videos into a local temp folder in the device's cache folder and returns them.</summary>
@@ -148,7 +148,7 @@
                 return null;
             }
 
-            if (!await Device.Permission.Albums.IsRequestGranted())
+            if (!await Permission.Albums.IsRequestGranted())
             {
                 await SuggestLaunchingSettings(errorAction, "Permission was denied to access the device gallery.");
                 return null;
@@ -156,7 +156,7 @@
 
             try
             {
-                return await Thread.UI.Run(() => DoPickVideo(enableMultipleSelection));
+                return await Thread.UI.Run(() => DoPickVideo(enableMultipleSelection)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -174,7 +174,7 @@
             else
             {
                 var launchSettings = await Alert.Confirm(error + " Do you want to go to your device settings to enable it?");
-                if (launchSettings) await Device.OS.OpenSettings();
+                if (launchSettings) await OS.OpenSettings();
             }
         }
 
@@ -185,10 +185,10 @@
         {
             try
             {
-                if (!await Device.Permission.Albums.IsRequestGranted())
+                if (!await Permission.Albums.IsRequestGranted())
                     throw new Exception("Permission to access the device albums (gallery) was denied.");
 
-                await Thread.UI.Run(() => DoSaveToAlbum(file));
+                await Thread.UI.Run(() => DoSaveToAlbum(file)).ConfigureAwait(false);
                 return true;
             }
             catch (Exception ex)
