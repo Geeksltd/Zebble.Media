@@ -165,9 +165,9 @@
 
             FileInfo SaveResult(Bitmap bitmap)
             {
-                var result = IO.CreateTempDirectory(globalCache: false).GetFile($"File.{ShortGuid.NewGuid()}.jpg");
+                var result = IO.CreateTempDirectory(globalCache: false).GetFile($"File.{ShortGuid.NewGuid()}.png");
                 using (var output = new FileStream(result.FullName, FileMode.Create))
-                    bitmap.Compress(Bitmap.CompressFormat.Jpeg, 100, output);
+                    bitmap.Compress(Bitmap.CompressFormat.Png, 100, output);
 
                 return result;
             }
