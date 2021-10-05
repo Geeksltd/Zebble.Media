@@ -96,8 +96,12 @@
                             FilePath = path;
                         }
 
-                        if (intent.ResolveActivity(PackageManager) != null)
-                            StartActivityForResult(intent, RequestId);
+
+                        // if (intent.ResolveActivity(PackageManager) != null)
+                        // Removed due to Android 11 changes.
+                        // https://cketti.de/2020/09/03/avoid-intent-resolveactivity/
+                        // https://stackoverflow.com/questions/62535856/intent-resolveactivity-returns-null-in-api-30
+                        StartActivityForResult(intent, RequestId);
                     }
                     catch (Exception ex)
                     {
