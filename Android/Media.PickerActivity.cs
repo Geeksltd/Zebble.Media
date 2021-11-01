@@ -30,7 +30,8 @@
             bool AllowMultiple, PurgeCameraRoll;
             int MaxSeconds;
             VideoQuality VideoQuality;
-            Uri FilePath;
+            Uri FileUrlPath;
+            string FileAbsolotePath;
 
             protected override void OnSaveInstanceState(Bundle outState)
             {
@@ -92,8 +93,9 @@
                                 path = FileProvider.GetUriForFile(Application.Context, $"{packageName}.fileprovider", file);
                             else path = Uri.FromFile(file);
 
-                            intent.PutExtra(MediaStore.ExtraOutput, path.ToString());
-                            FilePath = path;
+                            intent.PutExtra(MediaStore.ExtraOutput, path);
+                            FileUrlPath = path;
+                            FileAbsolotePath = file.AbsolutePath;
                         }
 
 
@@ -133,12 +135,12 @@
                         for (int i = 0; i < data?.ClipData.ItemCount; i++)
                             results.Add(SaveResult(data?.ClipData.GetItemAt(i).Uri));
                     }
-                    else if (data.Data == null)
+                    else if (data?.Data == null)
                     {
-                        var bitmap = (Bitmap)data.Extras.Get("data");
-                        results.Add(SaveResult(bitmap));
+                        results.Add(SaveResult(FileAbsolotePath));
                     }
-                    else results.Add(SaveResult(data?.Data));
+                    else
+                        results.Add(SaveResult(data?.Data));
 
                     var media = results.ExceptNull().ToArray();
 
@@ -152,7 +154,7 @@
             {
                 var result = IO.CreateTempDirectory(globalCache: false).GetFile($"File.{ShortGuid.NewGuid()}." + "mp4".OnlyWhen(IsVideo).Or("jpg"));
 
-                var fileUri = uri ?? FilePath;
+                var fileUri = uri ?? FileUrlPath;
 
                 if (fileUri?.Scheme == "file")
                 {
@@ -166,6 +168,12 @@
 
                 return result;
             }
+
+            FileInfo SaveResult(string filePath)
+            {
+                return new FileInfo(filePath);
+            }
+
 
             FileInfo SaveResult(Bitmap bitmap)
             {
