@@ -15,12 +15,13 @@
     using Uri = Android.Net.Uri;
     using Olive;
     using Android.Graphics;
+    using AndroidX.AppCompat.App;
 
     partial class Media
     {
         [Activity(ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize)]
         [Android.Runtime.Preserve(AllMembers = true)]
-        public class PickerActivity : Activity, Android.Media.MediaScannerConnection.IOnScanCompletedListener
+        public class PickerActivity : AppCompatActivity, Android.Media.MediaScannerConnection.IOnScanCompletedListener
         {
             internal static readonly AsyncEvent<MediaPickedEventArgs> Picked = new AsyncEvent<MediaPickedEventArgs>();
 
@@ -103,7 +104,7 @@
                         // Removed due to Android 11 changes.
                         // https://cketti.de/2020/09/03/avoid-intent-resolveactivity/
                         // https://stackoverflow.com/questions/62535856/intent-resolveactivity-returns-null-in-api-30
-                        StartActivityForResult(intent, RequestId);
+                        StartActivityForResult(intent, RequestId, savedInstanceState);
                     }
                     catch (Exception ex)
                     {
