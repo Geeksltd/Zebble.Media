@@ -19,7 +19,7 @@
 
     partial class Media
     {
-        [Activity(ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize)]
+        [Activity(ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize, Exported = false)]
         [Android.Runtime.Preserve(AllMembers = true)]
         public class PickerActivity : AppCompatActivity, Android.Media.MediaScannerConnection.IOnScanCompletedListener
         {
