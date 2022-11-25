@@ -14,7 +14,6 @@
     using System.Collections.Generic;
     using Uri = Android.Net.Uri;
     using Olive;
-    using Android.Graphics;
     using AndroidX.AppCompat.App;
 
     partial class Media
@@ -173,16 +172,6 @@
             FileInfo SaveResult(string filePath)
             {
                 return new FileInfo(filePath);
-            }
-
-
-            FileInfo SaveResult(Bitmap bitmap)
-            {
-                var result = IO.CreateTempDirectory(globalCache: false).GetFile($"File.{ShortGuid.NewGuid()}.png");
-                using (var output = new FileStream(result.FullName, FileMode.Create))
-                    bitmap.Compress(Bitmap.CompressFormat.Png, 100, output);
-
-                return result;
             }
 
             void SaveContentToFile(Uri uri, FileInfo result)
