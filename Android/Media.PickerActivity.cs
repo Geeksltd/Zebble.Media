@@ -32,7 +32,7 @@
             int MaxSeconds;
             VideoQuality VideoQuality;
             Uri FileUrlPath;
-            string FileAbsolotePath;
+            string FileAbsolutePath;
 
             protected override void OnSaveInstanceState(Bundle outState)
             {
@@ -96,7 +96,7 @@
 
                             intent.PutExtra(MediaStore.ExtraOutput, path);
                             FileUrlPath = path;
-                            FileAbsolotePath = file.AbsolutePath;
+                            FileAbsolutePath = file.AbsolutePath;
                         }
 
 
@@ -138,7 +138,7 @@
                     }
                     else if (data?.Data == null)
                     {
-                        results.Add(SaveResult(FileAbsolotePath));
+                        results.Add(SaveResult(FileAbsolutePath));
                     }
                     else
                         results.Add(SaveResult(data?.Data));
