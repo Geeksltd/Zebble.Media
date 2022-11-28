@@ -19,6 +19,9 @@
         {
             var packageManager = Android.App.Application.Context.PackageManager;
 
+            if (packageManager is null)
+                return Task.FromResult(result: false);
+
             if (packageManager.HasSystemFeature(PackageManager.FeatureCamera))
                 return Task.FromResult(result: true);
 
@@ -70,7 +73,6 @@
 
             void OnMediaPicked(MediaPickedEventArgs e)
             {
-                GC.Collect();
                 PickerActivity.Picked.RemoveHandler(OnMediaPicked);
 
                 if (e.RequestId != id) return;
@@ -81,7 +83,7 @@
             }
 
             PickerActivity.Picked.Handle(OnMediaPicked);
-            GC.Collect();
+
             return completionSource.Task;
         }
 

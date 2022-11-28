@@ -14,13 +14,12 @@
     using System.Collections.Generic;
     using Uri = Android.Net.Uri;
     using Olive;
-    using AndroidX.AppCompat.App;
 
     partial class Media
     {
         [Activity(ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize, Exported = false)]
         [Android.Runtime.Preserve(AllMembers = true)]
-        public class PickerActivity : AppCompatActivity, Android.Media.MediaScannerConnection.IOnScanCompletedListener
+        public class PickerActivity : Activity, Android.Media.MediaScannerConnection.IOnScanCompletedListener
         {
             internal static readonly AsyncEvent<MediaPickedEventArgs> Picked = new AsyncEvent<MediaPickedEventArgs>();
 
