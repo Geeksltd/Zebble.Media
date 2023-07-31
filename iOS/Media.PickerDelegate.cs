@@ -38,13 +38,12 @@
             {
                 RemoveOrientationChangeObserverAndNotifications();
 
-                FileInfo file;
-                switch ((NSString)info[UIImagePickerController.MediaType])
+                var file = (string)(NSString)info[UIImagePickerController.MediaType] switch
                 {
-                    case PHOTO_TYPE: file = SavePhoto(info); break;
-                    case VIDEO_TYPE: file = SaveVideo(info); break;
-                    default: throw new NotSupportedException();
-                }
+                    PHOTO_TYPE => SavePhoto(info),
+                    VIDEO_TYPE => SaveVideo(info),
+                    _ => throw new NotSupportedException(),
+                };
 
                 if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Phone)
                     UIApplication.SharedApplication.SetStatusBarStyle(StatusBarStyle, animated: false);
@@ -255,9 +254,9 @@
                 var image = (UIImage)info[UIImagePickerController.EditedImage]
                     ?? (UIImage)info[UIImagePickerController.OriginalImage];
 
-                image = FixOrientation(image);
+                if (image is null) return null;
 
-                var meta = info[UIImagePickerController.MediaMetadata] as NSDictionary;
+                image = FixOrientation(image);
 
                 var result = IO.CreateTempDirectory().GetFile("File.jpg");
 
