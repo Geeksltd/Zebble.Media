@@ -144,7 +144,7 @@
         {
             if (!SupportsPickingVideo())
             {
-                await Alert.Show("Your device does not support picking videos.");
+                await Dialogs.Current.Alert("Your device does not support picking videos.");
                 return null;
             }
 
@@ -173,7 +173,7 @@
             }
             else
             {
-                var launchSettings = await Alert.Confirm(error + " Do you want to go to your device settings to enable it?");
+                var launchSettings = await Dialogs.Current.Confirm(error + " Do you want to go to your device settings to enable it?");
                 if (launchSettings) await OS.OpenSettings();
             }
         }
