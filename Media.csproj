@@ -1,12 +1,12 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras/3.0.44">
   <PropertyGroup>
-    <TargetFrameworks>Xamarin.iOS10;MonoAndroid13.0</TargetFrameworks>
+    <TargetFrameworks>Xamarin.iOS10;MonoAndroid13.0;net8.0-android;net8.0-ios</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);uap10.0.18362</TargetFrameworks>
     <AssemblyName>Zebble.Media</AssemblyName>
     <RootNamespace>Zebble</RootNamespace>
     <PackageId>Zebble.Media</PackageId>
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
-    <Version>1.1.146.0</Version>
+    <Version>2.0.0.0</Version>
     <PackOnBuild>true</PackOnBuild>
     <NeutralLanguage>en</NeutralLanguage>
     <DefineConstants>$(DefineConstants)</DefineConstants>
@@ -24,10 +24,8 @@
     <PackageReleaseNotes>Minor fixes</PackageReleaseNotes>
     <Owners>Geeks Ltd</Owners>
     <Authors>Geeks Ltd</Authors>
-    <Copyright>Geeks Ltd 2023, All rights reserved.</Copyright>
+    <Copyright>Geeks Ltd 2024, All rights reserved.</Copyright>
     <DisableExtraReferences>true</DisableExtraReferences>
-    <AssemblyVersion>1.1.141.0</AssemblyVersion>
-    <FileVersion>1.1.141.0</FileVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -40,23 +38,24 @@
   <PropertyGroup Condition=" $(TargetFramework.StartsWith('uap10.0')) ">
     <DefineConstants>$(DefineConstants);UWP</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid')) ">
+  <PropertyGroup Condition=" $(TargetFramework.Contains('android')) ">
     <DefineConstants>$(DefineConstants);ANDROID</DefineConstants>
     <AndroidUseIntermediateDesignerFile>false</AndroidUseIntermediateDesignerFile>
   </PropertyGroup>
-  <PropertyGroup Condition=" $(TargetFramework.StartsWith('Xamarin.iOS')) ">
+  <PropertyGroup Condition=" $(TargetFramework.Contains('ios')) ">
     <DefineConstants>$(DefineConstants);IOS</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Shared\**\*.cs" />
   </ItemGroup>
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('uap10.0')) ">
+  <ItemGroup Condition=" $(DefineConstants.Contains('UWP')) ">
     <Compile Include="UWP\**\*.cs" />
   </ItemGroup>
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid')) ">
+  <ItemGroup Condition=" $(DefineConstants.Contains('ANDROID')) ">
+    <PackageReference Include="Xamarin.AndroidX.AppCompat" Version="1.6.1.7" />
     <Compile Include="Android\**\*.cs" />
   </ItemGroup>
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.iOS')) ">
+  <ItemGroup Condition=" $(DefineConstants.Contains('IOS')) ">
     <Compile Include="iOS\**\*.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -66,15 +65,7 @@
     <None Remove="Zebble-LicenseAgreement.txt" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Zebble" Version="4.5.733.0" />
-  </ItemGroup>
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.iOS')) ">
-    <PackageReference Include="GMImagePicker.Xamarin" Version="2.5.1" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Android\" />
-    <Folder Include="iOS\" />
-    <Folder Include="UWP\" />
+    <PackageReference Include="Zebble" Version="5.0.0" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="update-local-nuget-cache $(TargetDir)" />
