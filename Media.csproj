@@ -1,12 +1,12 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras/3.0.44">
   <PropertyGroup>
-    <TargetFrameworks>Xamarin.iOS10;MonoAndroid13.0;net8.0-android;net8.0-ios</TargetFrameworks>
+    <TargetFrameworks>net8.0-android;net8.0-ios</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);uap10.0.18362</TargetFrameworks>
     <AssemblyName>Zebble.Media</AssemblyName>
     <RootNamespace>Zebble</RootNamespace>
     <PackageId>Zebble.Media</PackageId>
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
-    <Version>2.0.0.0</Version>
+    <Version>2.0.1.0</Version>
     <PackOnBuild>true</PackOnBuild>
     <NeutralLanguage>en</NeutralLanguage>
     <DefineConstants>$(DefineConstants)</DefineConstants>
@@ -52,7 +52,7 @@
     <Compile Include="UWP\**\*.cs" />
   </ItemGroup>
   <ItemGroup Condition=" $(DefineConstants.Contains('ANDROID')) ">
-    <PackageReference Include="Xamarin.AndroidX.AppCompat" Version="1.6.1.7" />
+    <PackageReference Include="Xamarin.AndroidX.AppCompat" Version="1.7.0" />
     <Compile Include="Android\**\*.cs" />
   </ItemGroup>
   <ItemGroup Condition=" $(DefineConstants.Contains('IOS')) ">
@@ -65,7 +65,7 @@
     <None Remove="Zebble-LicenseAgreement.txt" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Zebble" Version="5.0.0" />
+    <PackageReference Include="Zebble" Version="5.0.33" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="update-local-nuget-cache $(TargetDir)" />
