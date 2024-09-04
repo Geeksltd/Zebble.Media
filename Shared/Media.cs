@@ -31,7 +31,8 @@
 #if ANDROID
             if (settings?.PurgeCameraRoll == true)
             {
-                if (!await Device.Permission.ExternalStorage.IsRequestGranted()) {
+                if (!await Device.Permission.ExternalStorage.IsRequestGranted())
+                {
                     await SuggestLaunchingSettings(errorAction, "Permission was denied to access the external storage.");
                     return null;
                 }
@@ -73,7 +74,8 @@
 #if ANDROID
             if (settings?.PurgeCameraRoll == true)
             {
-                if (!await Permission.ExternalStorage.IsRequestGranted()) {
+                if (!await Permission.ExternalStorage.IsRequestGranted())
+                {
                     await SuggestLaunchingSettings(errorAction, "Permission was denied to access the external storage.");
                     return null;
                 }

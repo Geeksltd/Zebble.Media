@@ -10,10 +10,39 @@
     using System.Threading.Tasks;
     using Zebble.Services;
     using Olive;
+    using AndroidX.Activity.Result;
+    using static AndroidX.Activity.Result.Contract.ActivityResultContracts;
+    using static AndroidX.Activity.Result.Contract.ActivityResultContracts.PickVisualMedia;
+    using System.Collections.Generic;
+    using Android.Runtime;
+    using Android.Database;
 
     partial class Media
     {
         static int NextRequestId;
+
+        static ActivityResultLauncher PhotoSingleLauncher;
+        static ActivityResultLauncher PhotoMultiLauncher;
+
+        static ActivityResultLauncher VideoSingleLauncher;
+        static ActivityResultLauncher VideoMultiLauncher;
+
+        public static void RegisterLaunchers()
+        {
+            var activity = (AndroidX.Activity.ComponentActivity)UIRuntime.CurrentActivity;
+
+            (PhotoSingleLauncher, PhotoMultiLauncher) = CreateLaunchers(extension: "jpg");
+            (VideoSingleLauncher, VideoMultiLauncher) = CreateLaunchers(extension: "mp4");
+
+            (ActivityResultLauncher, ActivityResultLauncher) CreateLaunchers(string extension)
+            {
+                var handler = new ActivityResultHandler(extension);
+                return (
+                    activity.RegisterForActivityResult(new PickVisualMedia(), handler),
+                    activity.RegisterForActivityResult(new PickMultipleVisualMedia(), handler)
+                );
+            }
+        }
 
         public static Task<bool> IsCameraAvailable()
         {
@@ -53,14 +82,124 @@
 
         static async Task<FileInfo[]> DoPickPhoto(bool enableMultipleSelection)
         {
-            var result = await TakeMedia("image/*", Intent.ActionPick, enableMultipleSelection, new Device.MediaCaptureSettings());
+            var result = await TakeMediaV2(enableMultipleSelection ? PhotoMultiLauncher : PhotoSingleLauncher, CreateRequest(ImageOnly.Instance));
             foreach (var r in result) await FixOrientation(r);
             return result;
         }
 
-        static Task<FileInfo[]> DoPickVideo(bool enableMultipleSelection)
+        static async Task<FileInfo[]> DoPickVideo(bool enableMultipleSelection)
         {
-            return TakeMedia("video/*", Intent.ActionPick, enableMultipleSelection, new Device.MediaCaptureSettings());
+            return await TakeMediaV2(enableMultipleSelection ? VideoMultiLauncher : VideoSingleLauncher, CreateRequest(VideoOnly.Instance));
+        }
+
+        static TaskCompletionSource<FileInfo[]> CompletionSource;
+
+        static async Task<FileInfo[]> TakeMediaV2(ActivityResultLauncher launcher, PickVisualMediaRequest request)
+        {
+            CompletionSource?.TrySetResult([]);
+            CompletionSource = new TaskCompletionSource<FileInfo[]>();
+
+            launcher.Launch(request);
+
+            return await CompletionSource.Task;
+        }
+
+        static PickVisualMediaRequest CreateRequest(IVisualMediaType mediaType)
+            => new PickVisualMediaRequest.Builder().SetMediaType(mediaType).Build();
+
+        class ActivityResultHandler(string Extension) : Java.Lang.Object, IActivityResultCallback
+        {
+            public void OnActivityResult(Java.Lang.Object result)
+            {
+                var files = new List<FileInfo>();
+
+                try
+                {
+                    if (result is Android.Net.Uri uri)
+                    {
+                        files.Add(ToFile(uri));
+                    }
+                    else
+                    {
+                        var uris = result.JavaCast<Java.Util.ArrayList>();
+                        if (uris is null) return;
+
+                        files.AddRange(uris.ToEnumerable<Android.Net.Uri>().Select(ToFile));
+                    }
+                }
+                finally
+                {
+                    CompletionSource?.TrySetResult(files.ExceptNull().ToArray());
+                }
+
+                FileInfo ToFile(Android.Net.Uri uri)
+                {
+                    var result = IO.CreateTempDirectory(globalCache: false)
+                        .GetFile($"File.{ShortGuid.NewGuid()}.{Extension}");
+
+                    return uri?.Scheme switch
+                    {
+                        "file" => FromFile(uri.Path, result),
+                        "content" => FromContent(uri, result),
+                        _ => null,
+                    };
+
+
+                    static FileInfo FromFile(string source, FileInfo destination)
+                    {
+                        File.Copy(source, destination.FullName);
+                        return destination;
+                    }
+
+                    static FileInfo FromContent(Android.Net.Uri source, FileInfo destination)
+                    {
+                        ICursor cursor = null;
+
+                        try
+                        {
+                            var resolver = UIRuntime.CurrentActivity.ContentResolver;
+                            cursor = resolver.Query(
+                                source, projection: null, selection: null,
+                                selectionArgs: null, sortOrder: null);
+
+                            if (cursor == null || !cursor.MoveToNext())
+                            {
+                                return null;
+                            }
+
+                            var column = cursor.GetColumnIndex(MediaStore.MediaColumns.Data);
+                            string contentPath = null;
+
+                            if (column != -1) contentPath = cursor.GetString(column);
+
+                            if (contentPath?.StartsWith("file", caseSensitive: false) == true)
+                            {
+                                return FromFile(contentPath, destination);
+                            }
+
+                            try
+                            {
+                                using var input = resolver.OpenInputStream(source);
+                                using var output = File.Create(destination.FullName);
+
+                                input.CopyTo(output);
+
+                                return destination;
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.For(typeof(Media)).Error(ex, "Failed to save the picked file.");
+                                return null;
+                            }
+                        }
+                        finally
+                        {
+                            cursor?.Close();
+                            cursor?.Dispose();
+                        }
+                    }
+                }
+            }
         }
 
         static Task<FileInfo[]> TakeMedia(string type, string action, bool enableMultipleSelection, Device.MediaCaptureSettings options)
